@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beam Waist, Illumination NA, and Rayleigh Length</title>
+<style>
+:root{
+  --navy:#173b66;
+  --blue:#2f80ed;
+  --teal:#2aa9b5;
+  --muted:#5f6f7f;
+  --border:#c8dce9;
+  --panel:#f8fbfd;
+  --card:#ffffff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#1f2d3a;
+  background:#fff;
+}
+main{
+  width:min(980px,94%);
+  margin:28px auto 48px;
+}
+.eyebrow{
+  color:var(--teal);
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+h1{
+  margin:.3rem 0 .45rem;
+  color:var(--navy);
+  font-size:clamp(30px,5vw,48px);
+  line-height:1.05;
+}
+.lede{
+  margin:0;
+  color:var(--muted);
+  font-size:18px;
+  line-height:1.45;
+}
+.layout{
+  display:grid;
+  grid-template-columns:310px minmax(0,1fr);
+  gap:18px;
+  margin-top:22px;
+  align-items:start;
+}
+.panel{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  background:var(--card);
+}
+.controls{
+  background:linear-gradient(#fff,#fbfdff);
+}
+h2{
+  margin:0 0 12px;
+  color:var(--navy);
+  font-size:22px;
+}
+label{
+  display:block;
+  font-weight:700;
+  color:var(--navy);
+}
+.controlgroup{
+  margin-top:16px;
+}
+.controlgroup:first-of-type{
+  margin-top:0;
+}
+.controlrow{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:baseline;
+}
+.controlvalue{
+  color:var(--teal);
+  font-weight:700;
+  white-space:nowrap;
+}
+select{
+  width:100%;
+  margin:10px 0 6px;
+  padding:9px 10px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#fff;
+  color:#1f2d3a;
+  font-size:14px;
+}
+input[type="range"]{
+  width:100%;
+  margin:14px 0 8px;
+}
+.helper{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.4;
+}
+.readouts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:0;
+}
+.metric{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:11px;
+  background:var(--panel);
+}
+.metric .k{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:4px;
+}
+.metric .v{
+  color:var(--navy);
+  font-size:21px;
+  font-weight:700;
+}
+.formula{
+  margin-top:0;
+  border:1px dashed var(--border);
+  border-radius:12px;
+  padding:12px;
+  color:#34485b;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.resultsrow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(250px,1.08fr);
+  gap:14px;
+  margin-top:14px;
+  align-items:start;
+}
+
+.svgwrap{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--panel);
+  overflow:hidden;
+}
+svg{display:block;width:100%;height:auto}
+.barbox{
+  margin-top:14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+}
+.barlabel{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  font-size:14px;
+  margin-bottom:10px;
+}
+.track{
+  position:relative;
+  height:42px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#eef4f8;
+  overflow:hidden;
+}
+.useful{
+  position:absolute;
+  top:0;bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  background:#8bb8df;
+  min-width:2px;
+}
+.centertext{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  color:var(--muted);
+  pointer-events:none;
+}
+.notes{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:18px;
+}
+.note{
+  border-radius:12px;
+  background:var(--panel);
+  padding:14px;
+  line-height:1.45;
+}
+.takeaway{
+  margin-top:18px;
+  border-radius:14px;
+  padding:15px 17px;
+  background:#e8f6fa;
+  color:var(--navy);
+  font-size:20px;
+  font-weight:700;
+}
+.footer{
+  margin-top:16px;
+  color:var(--muted);
+  font-size:12px;
+}
+@media(max-width:780px){
+  .layout,.notes,.resultsrow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Beam Waist, Illumination NA, and Rayleigh Length</h1>
+
+  <div class="layout">
+    <section class="panel controls">
+      
+<h2>Gaussian Beam Calculator</h2>
+
+      <div class="controlgroup">
+        <div class="controlrow">
+          <label for="waist">Beam waist radius, w₀</label>
+          <span class="controlvalue" id="waistControlRead">1.00 µm</span>
+        </div>
+        <input id="waist" type="range" min="0.10" max="30.00" step="0.01" value="1.00">
+        <div class="helper">The beam waist and illumination NA are linked by <strong>w₀ ≈ λ/(π·NA)</strong>. Large beam waists may correspond to an equivalent illumination NA below 0.10.</div>
+        <div class="helper" id="waistRangeHelper" style="margin-top:4px">Beam waist slider range: 0.10–30.00 µm.</div>
+      </div>
+
+      <div class="controlgroup">
+        <div class="controlrow">
+          <label for="na">Illumination NA</label>
+          <span class="controlvalue" id="naControlRead">0.16</span>
+        </div>
+        <input id="na" type="range" min="0.01" max="0.30" step="0.001" value="0.155">
+        <div class="helper">Higher illumination NA produces a thinner Gaussian waist but a shorter confocal parameter.</div>
+      </div>
+
+      <div class="controlgroup">
+        <div class="controlrow">
+          <label for="wavelength">Wavelength, λ</label>
+          <span class="controlvalue" id="wavelengthControlRead">488 nm</span>
+        </div>
+        <input id="wavelength" type="range" min="405" max="785" step="1" value="488">
+        <div class="helper">At fixed beam waist, increasing wavelength shortens the Rayleigh length. At fixed illumination NA, increasing wavelength makes the waist thicker and the Rayleigh length longer.</div>
+      </div>
+
+      <div class="controlgroup">
+        <div class="controlrow">
+          <label for="ri">Refractive index, n</label>
+          <span class="controlvalue" id="riControlRead">1.46</span>
+        </div>
+        <input id="ri" type="range" min="1.00" max="1.60" step="0.01" value="1.46">
+        <div class="helper">Higher refractive index increases the Rayleigh length for the same beam waist and wavelength.</div>
+      </div>
+
+      <div class="controlgroup">
+        <div class="helper"><strong>What is held constant right now?</strong> <span id="driverRead">Beam waist</span>. Changing wavelength preserves the most recently adjusted quantity whenever possible. If a large beam waist implies an equivalent NA below 0.01, the readout will show that value even though the NA slider itself is limited to 0.01–0.30.</div>
+      </div>
+
+    </section>
+
+    <section class="panel">
+      <h2>Interactive Gaussian Beam</h2>
+      <div class="helper" style="margin-bottom:10px">Change the beam waist to see the effects on Rayleigh length, confocal parameter and usable imaging sheet.</div>
+      <div class="svgwrap">
+        <svg viewBox="0 0 760 320" role="img" aria-label="Gaussian beam showing beam waist and Rayleigh length">
+          <defs>
+            <linearGradient id="beamOuterFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0b0d95" stop-opacity="0.98"/>
+              <stop offset="18%" stop-color="#0047ff" stop-opacity="0.98"/>
+              <stop offset="34%" stop-color="#00cfff" stop-opacity="0.98"/>
+              <stop offset="44%" stop-color="#83ff61" stop-opacity="0.98"/>
+              <stop offset="49%" stop-color="#ffe84f" stop-opacity="0.98"/>
+              <stop offset="50%" stop-color="#ffbf38" stop-opacity="0.98"/>
+              <stop offset="51%" stop-color="#ffe84f" stop-opacity="0.98"/>
+              <stop offset="56%" stop-color="#83ff61" stop-opacity="0.98"/>
+              <stop offset="66%" stop-color="#00cfff" stop-opacity="0.98"/>
+              <stop offset="82%" stop-color="#0047ff" stop-opacity="0.98"/>
+              <stop offset="100%" stop-color="#0b0d95" stop-opacity="0.98"/>
+            </linearGradient>
+            <linearGradient id="beamHotFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#003bff" stop-opacity="0.95"/>
+              <stop offset="20%" stop-color="#00d7ff" stop-opacity="0.98"/>
+              <stop offset="35%" stop-color="#a8ff52" stop-opacity="0.98"/>
+              <stop offset="45%" stop-color="#fff15a" stop-opacity="0.99"/>
+              <stop offset="50%" stop-color="#ff2b00" stop-opacity="1.00"/>
+              <stop offset="55%" stop-color="#fff15a" stop-opacity="0.99"/>
+              <stop offset="65%" stop-color="#a8ff52" stop-opacity="0.98"/>
+              <stop offset="80%" stop-color="#00d7ff" stop-opacity="0.98"/>
+              <stop offset="100%" stop-color="#003bff" stop-opacity="0.95"/>
+            </linearGradient>
+          </defs>
+          <line x1="35" y1="160" x2="725" y2="160" stroke="#c8dce9" stroke-width="1" stroke-dasharray="6 6"/>
+          <path id="beamArea" fill="url(#beamOuterFill)"></path>
+          <path id="beamHotArea" fill="url(#beamHotFill)" opacity="0.98"></path>
+          <path id="beamUpper" fill="none" stroke="#1558d6" stroke-width="2"></path>
+          <path id="beamLower" fill="none" stroke="#1558d6" stroke-width="2"></path>
+
+          <line x1="380" y1="118" x2="380" y2="202" stroke="#173b66" stroke-width="1.5" stroke-dasharray="5 5"/>
+          <text x="380" y="102" text-anchor="middle" fill="#173b66" font-size="14" font-weight="700">beam waist</text>
+
+          <line id="zrL" y1="57" y2="246" stroke="#2aa9b5" stroke-width="1.5" stroke-dasharray="5 5"></line>
+          <line id="zrR" y1="57" y2="246" stroke="#2aa9b5" stroke-width="1.5" stroke-dasharray="5 5"></line>
+          <line id="zrBracket" y1="69" y2="69" stroke="#2aa9b5" stroke-width="2"></line>
+          <text x="380" y="48" text-anchor="middle" fill="#173b66" font-size="14" font-weight="700">Rayleigh length</text>
+          <text x="380" y="292" text-anchor="middle" fill="#5f6f7f" font-size="13">beam propagation →</text>
+        </svg>
+      </div>
+
+      <div class="barbox">
+        <div class="barlabel">
+          <strong>A 4 mm cleared-tissue field</strong>
+          <strong id="fieldLabel">18.8 µm useful imaging region</strong>
+        </div>
+        <div class="track">
+          <div id="usefulField" class="useful" style="width:.47%"></div>
+          <div class="centertext">4,000 µm field of view</div>
+        </div>
+        <div class="helper" style="margin-top:8px">Highlighted region = one confocal parameter.</div>
+      </div>
+
+      <div class="resultsrow">
+      <div class="readouts">
+
+        <div class="metric"><div class="k">w₀</div><div class="v" id="wread">1.0 µm</div></div>
+        <div class="metric"><div class="k">1/e² diameter</div><div class="v" id="dread">2.0 µm</div></div>
+        <div class="metric"><div class="k">Rayleigh length zᴿ</div><div class="v" id="zrRead">9.4 µm</div></div>
+        <div class="metric"><div class="k">Confocal parameter 2zᴿ</div><div class="v" id="cpRead">18.8 µm</div></div>
+        <div class="metric"><div class="k">Cleared-tissue FOV</div><div class="v">4 mm</div></div>
+        <div class="metric"><div class="k">FOV within 2zᴿ</div><div class="v" id="pctRead">0.47%</div></div>
+      </div>
+
+      <div class="formula">
+        <strong>Model</strong><br>
+        zᴿ = π n w₀² / λ<br>
+        w₀ ≈ λ / (π · NA)<br>
+        <span id="formulaValues">λ = 488 nm, n = 1.46</span><br>
+        <span id="linkEquation">Current relationship: NA = λ/(πw₀) = 0.155</span><br><span id="rangeNote">The NA slider spans 0.01–0.30, but equivalent NA may fall below 0.01 when the beam waist is large.</span><br><br>
+        <strong>Key lesson:</strong> beam waist and illumination NA cannot be chosen independently. At a given wavelength, choosing one automatically chooses the other.
+      </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <strong>What changes?</strong><br>
+      A very thin waist gives excellent sectioning locally, but the useful propagation distance shrinks rapidly.
+    </div>
+    <div class="note">
+      <strong>The question to ask</strong><br>
+      “Can a sheet X µm thick <em>interrogate a FOV of Y width</em>”
+    </div>
+  </div>
+
+  <div class="takeaway">The beam waist tells you how thin the sheet is. The Rayleigh length tells you how useful that waist is for imaging.</div>
+
+  <div class="footer">LifeCanvas Academy Interactive teaching model</div>
+</main>
+
+
+
+
+<script>
+(() => {
+  const waistSlider = document.getElementById('waist');
+  const naSlider = document.getElementById('na');
+  const wavelengthSlider = document.getElementById('wavelength');
+  const riSlider = document.getElementById('ri');
+
+  const waistControlRead = document.getElementById('waistControlRead');
+  const naControlRead = document.getElementById('naControlRead');
+  const wavelengthControlRead = document.getElementById('wavelengthControlRead');
+  const riControlRead = document.getElementById('riControlRead');
+  const waistRangeHelper = document.getElementById('waistRangeHelper');
+  const driverRead = document.getElementById('driverRead');
+  const formulaValues = document.getElementById('formulaValues');
+  const linkEquation = document.getElementById('linkEquation');
+  const rangeNote = document.getElementById('rangeNote');
+
+  const wread = document.getElementById('wread');
+  const dread = document.getElementById('dread');
+  const zrRead = document.getElementById('zrRead');
+  const cpRead = document.getElementById('cpRead');
+  const pctRead = document.getElementById('pctRead');
+  const fieldLabel = document.getElementById('fieldLabel');
+  const usefulField = document.getElementById('usefulField');
+
+  // Original Gaussian-beam cartoon elements — preserved.
+  const area = document.getElementById('beamArea');
+  const hotArea = document.getElementById('beamHotArea');
+  const upper = document.getElementById('beamUpper');
+  const lower = document.getElementById('beamLower');
+  const zrL = document.getElementById('zrL');
+  const zrR = document.getElementById('zrR');
+  const zrBracket = document.getElementById('zrBracket');
+
+  const fov = 4000;
+  const cx = 380, cy = 160, xmin = 35, xmax = 725;
+  const halfSpan = 2000;
+  const xScale = (xmax - xmin) / (2 * halfSpan);
+
+  const fmt = v => v >= 1000 ? (v/1000).toFixed(2) + ' mm' : v.toFixed(v < 100 ? 1 : 0) + ' µm';
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  let driver = 'waist';
+
+  const NA_MIN = 0.01;
+  const NA_MAX = 0.30;
+  const WAIST_MIN = 0.10;
+  const WAIST_MAX = 30.00;
+
+  function waistFromNA(lambda, NA) {
+    return lambda / (Math.PI * NA);
+  }
+
+  function naFromWaist(lambda, w0) {
+    return lambda / (Math.PI * w0);
+  }
+
+  function update(source = null){
+    if(source === 'waist') driver = 'waist';
+    if(source === 'na') driver = 'na';
+
+    const wavelengthNm = clamp(Number(wavelengthSlider.value) || 488, 405, 785);
+    const lambda = wavelengthNm / 1000; // µm
+    const n = clamp(Number(riSlider.value) || 1.46, 1.00, 1.60);
+
+    waistSlider.min = WAIST_MIN.toFixed(2);
+    waistSlider.max = WAIST_MAX.toFixed(2);
+    waistRangeHelper.textContent = 'Beam waist slider range: 0.10–30.00 µm. Large waists may correspond to equivalent illumination NA values below 0.01.';
+
+    let w0, actualNA, displayNA;
+
+    if(driver === 'na'){
+      actualNA = clamp(Number(naSlider.value) || 0.155, NA_MIN, NA_MAX);
+      w0 = waistFromNA(lambda, actualNA);
+      w0 = clamp(w0, WAIST_MIN, WAIST_MAX);
+      waistSlider.value = w0.toFixed(3);
+
+      // Recalculate from clamped waist in case the waist range imposed a limit.
+      actualNA = naFromWaist(lambda, w0);
+      displayNA = actualNA;
+    } else {
+      w0 = clamp(Number(waistSlider.value) || 1.00, WAIST_MIN, WAIST_MAX);
+      waistSlider.value = w0.toFixed(3);
+      actualNA = naFromWaist(lambda, w0);
+      displayNA = actualNA;
+
+      // Keep the NA slider thumb within the requested range, while the readout shows the true value.
+      naSlider.value = clamp(actualNA, NA_MIN, NA_MAX).toFixed(3);
+    }
+
+    const zr = Math.PI * n * w0 * w0 / lambda;
+    const cp = 2 * zr;
+    const pct = Math.min(100, cp / fov * 100);
+
+    waistControlRead.textContent = w0.toFixed(2) + ' µm';
+    naControlRead.textContent = displayNA.toFixed(3) + (displayNA < NA_MIN ? ' *' : '');
+    wavelengthControlRead.textContent = wavelengthNm.toFixed(0) + ' nm';
+    riControlRead.textContent = n.toFixed(2);
+    driverRead.textContent = driver === 'waist' ? 'Beam waist' : 'Illumination NA';
+    formulaValues.textContent = 'λ = ' + wavelengthNm.toFixed(0) + ' nm, n = ' + n.toFixed(2);
+    linkEquation.textContent = 'Current relationship: NA = λ/(πw₀) = ' + displayNA.toFixed(3)
+      + '  ·  w₀ = λ/(π·NA) = ' + w0.toFixed(2) + ' µm';
+
+    if(displayNA < NA_MIN){
+      rangeNote.textContent = '*Equivalent NA is below the NA-slider range. The readout shows the correct calculated value; the NA slider itself remains limited to 0.01–0.30.';
+    } else {
+      rangeNote.textContent = 'The NA slider spans 0.01–0.30, but equivalent NA may fall below 0.01 when the beam waist is large.';
+    }
+
+    wread.textContent = w0.toFixed(2) + ' µm';
+    dread.textContent = (2 * w0).toFixed(2) + ' µm';
+    zrRead.textContent = fmt(zr);
+    cpRead.textContent = fmt(cp);
+    pctRead.textContent = pct.toFixed(pct < 1 ? 2 : 1) + '%';
+    fieldLabel.textContent = fmt(cp) + ' useful imaging region';
+    usefulField.style.width = pct + '%';
+
+    // Original pseudocolor Gaussian-beam cartoon logic.
+    const top = [], bot = [];
+    const hotTop = [], hotBot = [];
+    const hotSpan = Math.min(halfSpan, zr);
+
+    for(let i = 0; i <= 180; i++){
+      const z = -halfSpan + (2 * halfSpan * i / 180);
+      const wz = w0 * Math.sqrt(1 + (z / zr) * (z / zr));
+      const visualHalf = Math.min(90, 4.5 + wz * 1.25);
+      const x = cx + z * xScale;
+
+      top.push([x, cy - visualHalf]);
+      bot.push([x, cy + visualHalf]);
+
+      if(Math.abs(z) <= hotSpan){
+        const hotHalf = Math.max(2.5, visualHalf * 0.28);
+        hotTop.push([x, cy - hotHalf]);
+        hotBot.push([x, cy + hotHalf]);
+      }
+    }
+
+    const p = pts => 'M ' + pts.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' L ');
+    upper.setAttribute('d', p(top));
+    lower.setAttribute('d', p(bot));
+    area.setAttribute('d', p(top) + ' L ' + bot.slice().reverse().map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' L ') + ' Z');
+
+    if(hotTop.length > 1){
+      hotArea.setAttribute('d', p(hotTop) + ' L ' + hotBot.slice().reverse().map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' L ') + ' Z');
+    } else {
+      hotArea.setAttribute('d', '');
+    }
+
+    const left = Math.max(xmin, cx - zr * xScale);
+    const right = Math.min(xmax, cx + zr * xScale);
+    zrL.setAttribute('x1', left);
+    zrL.setAttribute('x2', left);
+    zrR.setAttribute('x1', right);
+    zrR.setAttribute('x2', right);
+    zrBracket.setAttribute('x1', left);
+    zrBracket.setAttribute('x2', right);
+  }
+
+  waistSlider.addEventListener('input', () => update('waist'));
+  naSlider.addEventListener('input', () => update('na'));
+  wavelengthSlider.addEventListener('input', () => update());
+  riSlider.addEventListener('input', () => update());
+
+  update('waist');
+})();
+</script>
+
+
+
+</body>
+</html>
